@@ -65,7 +65,7 @@ public static class GameBootstrapper
         }
 
         mainCam.orthographic = true;
-        mainCam.orthographicSize = 8f;
+        mainCam.orthographicSize = 25f;
         mainCam.backgroundColor = new Color(0.05f, 0.02f, 0.15f);  // dark navy/space
         mainCam.clearFlags = CameraClearFlags.SolidColor;
         mainCam.transform.position = new Vector3(0f, 0f, -10f);
