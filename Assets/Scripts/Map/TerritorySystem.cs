@@ -86,6 +86,13 @@ public class TerritorySystem : MonoBehaviour
         return null;
     }
 
+    /// <summary>Returns a copy of the territory polygon points for the given trail (for minimap rendering).</summary>
+    public List<Vector2> GetTerritoryPoints(TerritoryTrail trail)
+    {
+        if (!_territories.TryGetValue(trail, out var poly)) return null;
+        return new List<Vector2>(poly);
+    }
+
     /// <summary>Returns the total captured area for a given trail owner.</summary>
     public float GetCapturedArea(TerritoryTrail trail)
     {
