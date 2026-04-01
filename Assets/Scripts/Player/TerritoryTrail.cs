@@ -40,6 +40,9 @@ public class TerritoryTrail : MonoBehaviour
     private const float MIN_POINT_DISTANCE = 0.25f;
     // Thickness of the collider hit-area for trail collision detection
     private const float TRAIL_HIT_THRESHOLD = 0.35f;
+    // Enemy trail collision check runs every N frames to reduce overhead
+    private const int   ENEMY_TRAIL_CHECK_INTERVAL = 3;
+    private int _enemyTrailCheckFrame;
 
     // ── Lifecycle ──────────────────────────────────────────────────────────────
     private void Awake()
@@ -82,6 +85,19 @@ public class TerritoryTrail : MonoBehaviour
             // Start tail on first frame outside territory
             if (!_tailActive)
                 StartTail();
+
+            // Check enemy trail collision (throttled to every N frames)
+            _enemyTrailCheckFrame++;
+            if (_territorySystem != null && _enemyTrailCheckFrame >= ENEMY_TRAIL_CHECK_INTERVAL)
+            {
+                _enemyTrailCheckFrame = 0;
+                TerritoryTrail enemyTrail = _territorySystem.CheckTrailCollision(pos, this);
+                if (enemyTrail != null)
+                {
+                    _controller.Die();
+                    return;
+                }
+            }
 
             // Extend trail
             if (_trailPoints.Count == 0 ||

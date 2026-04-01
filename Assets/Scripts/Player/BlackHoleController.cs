@@ -85,8 +85,14 @@ public class BlackHoleController : MonoBehaviour
         IsAlive = false;
         _trail.ClearTrail();
 
-        // Hide the object
-        gameObject.SetActive(false);
+        Debug.Log($"[BlackHoleController] {gameObject.name} died, respawning in {(config != null ? config.respawnDelay : 3f)}s");
+
+        // Disable rendering and collision but keep the GameObject active so coroutines work
+        var renderers = GetComponentsInChildren<Renderer>();
+        foreach (var r in renderers) r.enabled = false;
+
+        var colliders = GetComponentsInChildren<Collider2D>();
+        foreach (var c in colliders) c.enabled = false;
 
         // Schedule respawn
         float delay = config != null ? config.respawnDelay : 3f;
@@ -118,8 +124,17 @@ public class BlackHoleController : MonoBehaviour
         transform.position = MathHelpers.RandomPointInCircle(mapRadius * 0.7f);
 
         IsAlive = true;
-        gameObject.SetActive(true);
+
+        // Re-enable rendering and collision
+        var renderers = GetComponentsInChildren<Renderer>();
+        foreach (var r in renderers) r.enabled = true;
+
+        var colliders = GetComponentsInChildren<Collider2D>();
+        foreach (var c in colliders) c.enabled = true;
+
         _trail.ResetTrail();
+
+        Debug.Log($"[BlackHoleController] {gameObject.name} respawned.");
     }
 
     // ── Trigger Detection ──────────────────────────────────────────────────────
