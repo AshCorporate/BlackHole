@@ -100,6 +100,7 @@ public class GameManager : MonoBehaviour
     /// <summary>Called by the pause button in the HUD.</summary>
     public void TogglePause()
     {
+        if (pauseMenu == null) return;
         if (pauseMenu.IsPaused)
             pauseMenu.Resume();
         else
@@ -112,11 +113,32 @@ public class GameManager : MonoBehaviour
     {
         yield return null; // wait one frame
 
+        // Re-discover references in case they were created after Start()
+        if (matchTimer      == null) matchTimer      = FindFirstObjectByType<MatchTimer>();
+        if (scoreManager    == null) scoreManager    = FindFirstObjectByType<ScoreManager>();
+        if (territorySystem == null) territorySystem = FindFirstObjectByType<TerritorySystem>();
+        if (joystick        == null) joystick        = FindFirstObjectByType<Joystick>();
+        if (hud             == null) hud             = FindFirstObjectByType<GameHUD>();
+        if (pauseMenu       == null) pauseMenu       = FindFirstObjectByType<PauseMenu>();
+        if (gameOverScreen  == null) gameOverScreen  = FindFirstObjectByType<GameOverScreen>();
+
         SpawnPlayer();
         SpawnBots();
 
-        matchTimer.OnTimeUp.AddListener(OnTimeUp);
-        matchTimer.StartTimer();
+        // Null-safe timer start
+        if (matchTimer != null)
+        {
+            matchTimer.OnTimeUp.AddListener(OnTimeUp);
+            matchTimer.StartTimer();
+        }
+        else
+        {
+            Debug.LogWarning("[GameManager] MatchTimer not found — creating one.");
+            GameObject timerObj = new GameObject("MatchTimer");
+            matchTimer = timerObj.AddComponent<MatchTimer>();
+            matchTimer.OnTimeUp.AddListener(OnTimeUp);
+            matchTimer.StartTimer();
+        }
 
         Debug.Log("[GameManager] Match started!");
     }
