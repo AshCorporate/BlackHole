@@ -29,7 +29,7 @@ public class CameraFollow : MonoBehaviour
         if (target == null)
         {
             // Auto-find player if not assigned
-            BlackHoleController player = FindObjectOfType<BlackHoleController>();
+            BlackHoleController player = FindFirstObjectByType<BlackHoleController>();
             if (player != null)
             {
                 target = player.transform;
