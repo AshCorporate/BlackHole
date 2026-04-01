@@ -43,6 +43,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private MatchTimer     matchTimer;
     [SerializeField] private ScoreManager   scoreManager;
     [SerializeField] private TerritorySystem territorySystem;
+    [SerializeField] private MinimapController minimapController;
 
     // ── Private ────────────────────────────────────────────────────────────────
     private BlackHoleController              _playerController;
@@ -83,6 +84,7 @@ public class GameManager : MonoBehaviour
         if (matchTimer      == null) matchTimer      = FindFirstObjectByType<MatchTimer>();
         if (scoreManager    == null) scoreManager    = FindFirstObjectByType<ScoreManager>();
         if (territorySystem == null) territorySystem = FindFirstObjectByType<TerritorySystem>();
+        if (minimapController == null) minimapController = FindFirstObjectByType<MinimapController>();
 
         // Short delay to let all systems initialise
         StartCoroutine(InitialiseMatch());
@@ -122,6 +124,9 @@ public class GameManager : MonoBehaviour
         if (hud             == null) hud             = FindFirstObjectByType<GameHUD>();
         if (pauseMenu       == null) pauseMenu       = FindFirstObjectByType<PauseMenu>();
         if (gameOverScreen  == null) gameOverScreen  = FindFirstObjectByType<GameOverScreen>();
+        if (minimapController == null) minimapController = FindFirstObjectByType<MinimapController>();
+        if (minimapController == null)
+            minimapController = gameObject.AddComponent<MinimapController>();
 
         SpawnPlayer();
         SpawnBots();
@@ -176,6 +181,11 @@ public class GameManager : MonoBehaviour
         TerritoryTrail trail = player.GetComponent<TerritoryTrail>();
         trail?.SetColor(PlayerColors[0]);
 
+        // Wire minimap — player trail
+        minimapController?.SetPlayerTrail(trail);
+        minimapController?.SetPlayerTransform(player.transform);
+        minimapController?.RegisterTrail(trail);
+
         // Register in territory and score systems
         territorySystem?.RegisterPlayer(trail, pos, 4f);
         scoreManager?.RegisterPlayer(SettingsMenu.PlayerName, true);
@@ -212,6 +222,7 @@ public class GameManager : MonoBehaviour
             Color botColor = PlayerColors[(i + 1) % PlayerColors.Length];
             TerritoryTrail trail = bot.GetComponent<TerritoryTrail>();
             trail?.SetColor(botColor);
+            minimapController?.RegisterTrail(trail);
 
             territorySystem?.RegisterPlayer(trail, pos, 4f);
             scoreManager?.RegisterPlayer($"Bot {i + 1}", false);

@@ -51,6 +51,13 @@ public class GameConfig : ScriptableObject
     [Tooltip("Width of the trail line drawn behind the player")]
     public float trailWidth = 0.2f;
 
+    [Tooltip("Maximum seconds the tail can exist before expiring (GDD §7: 10 s)")]
+    public float tailMaxDuration = 10f;
+
+    [Tooltip("Number of corners/caps for LineRenderer smoothness")]
+    [Range(2, 8)]
+    public int trailCornerVertices = 4;
+
     [Tooltip("Seconds before a killed player respawns")]
     public float respawnDelay = 3f;
 
@@ -104,13 +111,13 @@ public class GameConfig : ScriptableObject
 
     [Header("Camera")]
     [Tooltip("How fast the camera follows the player (higher = snappier)")]
-    public float cameraFollowSpeed = 5f;
+    public float cameraFollowSpeed = 8f;
 
     [Tooltip("How fast the camera zooms in/out")]
     public float cameraZoomSpeed = 3f;
 
     [Tooltip("Minimum orthographic size (closest zoom)")]
-    public float cameraMinZoom = 8f;
+    public float cameraMinZoom = 12f;  // Paper.io fixed zoom — игрок хорошо виден
 
     [Tooltip("Maximum orthographic size (farthest zoom)")]
     public float cameraMaxZoom = 28f;
@@ -119,7 +126,7 @@ public class GameConfig : ScriptableObject
     public float cameraZoomMassFactor = 0.15f;
 
     [Tooltip("How far ahead of movement direction the camera looks")]
-    public float cameraLookAhead = 2.5f;
+    public float cameraLookAhead = 1.5f;  // Меньше упреждение, как в Paper.io
 
     [Header("Map Visuals")]
     [Tooltip("Number of decorative zone rings on the map")]
