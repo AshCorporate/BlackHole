@@ -166,6 +166,12 @@ public class GameManager : MonoBehaviour
         player.SetJoystick(joystick);
         player.gameObject.name = "Player";
 
+        // Wire camera
+        CameraController cam = Camera.main?.GetComponent<CameraController>();
+        if (cam == null && Camera.main != null)
+            cam = Camera.main.gameObject.AddComponent<CameraController>();
+        cam?.SetTarget(player.transform, player.GetComponent<MassSystem>());
+
         // Set colour
         TerritoryTrail trail = player.GetComponent<TerritoryTrail>();
         trail?.SetColor(PlayerColors[0]);
