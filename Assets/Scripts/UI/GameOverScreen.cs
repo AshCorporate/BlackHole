@@ -27,9 +27,16 @@ public class GameOverScreen : MonoBehaviour
     // ── Lifecycle ──────────────────────────────────────────────────────────────
     private void Awake()
     {
+        // Panel visibility is managed here so it hides even in hand-crafted scenes.
+        gameOverPanel?.SetActive(false);
+    }
+
+    private void Start()
+    {
+        // Wire listeners in Start so that fields injected via reflection (by
+        // AutoSceneSetup) are guaranteed to be set before binding.
         playAgainButton?.onClick.AddListener(PlayAgain);
         mainMenuButton?.onClick.AddListener(GoToMainMenu);
-        gameOverPanel?.SetActive(false);
     }
 
     // ── Public API ─────────────────────────────────────────────────────────────
@@ -69,12 +76,18 @@ public class GameOverScreen : MonoBehaviour
     private void PlayAgain()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene("Game");
+        if (GameBootstrapper.Instance != null)
+            GameBootstrapper.Instance.RestartGame();
+        else
+            SceneManager.LoadScene("Game");
     }
 
     private void GoToMainMenu()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene("MainMenu");
+        if (GameBootstrapper.Instance != null)
+            GameBootstrapper.Instance.GoToMainMenu();
+        else
+            SceneManager.LoadScene("MainMenu");
     }
 }
