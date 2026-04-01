@@ -116,14 +116,17 @@ public class GameConfig : ScriptableObject
     [Tooltip("How fast the camera zooms in/out")]
     public float cameraZoomSpeed = 3f;
 
+    [Tooltip("Base orthographic size of the camera before mass scaling")]
+    public float cameraBaseSize = 15f;
+
     [Tooltip("Minimum orthographic size (closest zoom)")]
-    public float cameraMinZoom = 12f;  // Paper.io fixed zoom — игрок хорошо виден
+    public float cameraMinZoom = 10f;
 
     [Tooltip("Maximum orthographic size (farthest zoom)")]
-    public float cameraMaxZoom = 28f;
+    public float cameraMaxZoom = 40f;
 
     [Tooltip("How much mass increases the zoom (orthographicSize += mass * factor)")]
-    public float cameraZoomMassFactor = 0.15f;
+    public float cameraMassZoomFactor = 0.15f;
 
     [Tooltip("How far ahead of movement direction the camera looks")]
     public float cameraLookAhead = 1.5f;  // Меньше упреждение, как в Paper.io
