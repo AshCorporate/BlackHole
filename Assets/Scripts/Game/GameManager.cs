@@ -74,6 +74,15 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        // Auto-discover scene references if not assigned in the Inspector
+        if (joystick        == null) joystick        = FindFirstObjectByType<Joystick>();
+        if (hud             == null) hud             = FindFirstObjectByType<GameHUD>();
+        if (pauseMenu       == null) pauseMenu       = FindFirstObjectByType<PauseMenu>();
+        if (gameOverScreen  == null) gameOverScreen  = FindFirstObjectByType<GameOverScreen>();
+        if (matchTimer      == null) matchTimer      = FindFirstObjectByType<MatchTimer>();
+        if (scoreManager    == null) scoreManager    = FindFirstObjectByType<ScoreManager>();
+        if (territorySystem == null) territorySystem = FindFirstObjectByType<TerritorySystem>();
+
         // Short delay to let all systems initialise
         StartCoroutine(InitialiseMatch());
     }

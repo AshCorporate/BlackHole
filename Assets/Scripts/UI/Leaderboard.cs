@@ -19,7 +19,7 @@ public class Leaderboard : MonoBehaviour
     // ── Lifecycle ──────────────────────────────────────────────────────────────
     private void Start()
     {
-        _scoreManager = FindObjectOfType<ScoreManager>();
+        _scoreManager = FindFirstObjectByType<ScoreManager>();
     }
 
     private void Update()

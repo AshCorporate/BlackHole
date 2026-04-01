@@ -83,6 +83,7 @@ public class ObjectSpawner : MonoBehaviour
 
     private void SpawnObject(ObjectDefinition def)
     {
+        EnsureCityObjectPrefab();
         if (cityObjectPrefab == null) return;
 
         float mapRadius = config != null ? config.mapRadius : 50f;
@@ -91,6 +92,23 @@ public class ObjectSpawner : MonoBehaviour
         CityObject obj = Instantiate(cityObjectPrefab, new Vector3(pos.x, pos.y, 0f), Quaternion.identity, transform);
         obj.Initialize(def.Name, def.Mass, def.Color);
         _activeObjects.Add(obj);
+    }
+
+    /// <summary>
+    /// Creates a minimal runtime CityObject prefab if none is assigned in the Inspector.
+    /// </summary>
+    private void EnsureCityObjectPrefab()
+    {
+        if (cityObjectPrefab != null) return;
+
+        GameObject go = new GameObject("CityObject_Prefab");
+        go.SetActive(false);
+        go.AddComponent<SpriteRenderer>();
+        Rigidbody2D rb = go.AddComponent<Rigidbody2D>();
+        rb.gravityScale = 0f;
+        go.AddComponent<CircleCollider2D>();
+        cityObjectPrefab = go.AddComponent<CityObject>();
+        go.transform.SetParent(transform);
     }
 
     private Vector2 FindValidPosition(float mapRadius)

@@ -25,7 +25,7 @@ public class TerritoryTrail : MonoBehaviour
         if (config == null)
             config = Resources.Load<GameConfig>("GameConfig");
 
-        _territorySystem = FindObjectOfType<TerritorySystem>();
+        _territorySystem = FindFirstObjectByType<TerritorySystem>();
         SetupLineRenderer();
     }
 

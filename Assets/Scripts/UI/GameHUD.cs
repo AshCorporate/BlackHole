@@ -27,8 +27,8 @@ public class GameHUD : MonoBehaviour
     // ── Lifecycle ──────────────────────────────────────────────────────────────
     private void Start()
     {
-        _matchTimer   = FindObjectOfType<MatchTimer>();
-        _scoreManager = FindObjectOfType<ScoreManager>();
+        _matchTimer   = FindFirstObjectByType<MatchTimer>();
+        _scoreManager = FindFirstObjectByType<ScoreManager>();
     }
 
     private void Update()

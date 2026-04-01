@@ -38,8 +38,8 @@ public class BlackHolePhysics : MonoBehaviour
 
         // Black holes are not affected by gravity
         _rb.gravityScale = 0f;
-        _rb.drag = 2f;
-        _rb.angularDrag = 0f;
+        _rb.linearDamping = 2f;
+        _rb.angularDamping = 0f;
         _rb.constraints = RigidbodyConstraints2D.FreezeRotation;
     }
 
@@ -88,7 +88,7 @@ public class BlackHolePhysics : MonoBehaviour
         CurrentSpeed = Mathf.Max(minSpeed,
             (baseSpeed - _massSystem.Mass * penalty) * _speedBoostMultiplier);
 
-        _rb.velocity = InputDirection.normalized * CurrentSpeed;
+        _rb.linearVelocity = InputDirection.normalized * CurrentSpeed;
     }
 
     private void KeepInsideMap()

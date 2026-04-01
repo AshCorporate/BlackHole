@@ -37,7 +37,7 @@ public class ScoreManager : MonoBehaviour
 
     private void Start()
     {
-        _territory = FindObjectOfType<TerritorySystem>();
+        _territory = FindFirstObjectByType<TerritorySystem>();
     }
 
     // ── Public API ─────────────────────────────────────────────────────────────

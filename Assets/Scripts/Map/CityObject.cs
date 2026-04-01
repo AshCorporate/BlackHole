@@ -28,7 +28,7 @@ public class CityObject : MonoBehaviour
         _config = Resources.Load<GameConfig>("GameConfig");
 
         _rb.gravityScale = 0f;
-        _rb.drag = 5f;
+        _rb.linearDamping = 5f;
 
         // Scale the object proportional to its mass
         float scale = Mathf.Clamp(0.2f + objectMass * 0.05f, 0.2f, 3f);
@@ -86,7 +86,7 @@ public class CityObject : MonoBehaviour
         IsAbsorbed = false;
         if (_rb != null)
         {
-            _rb.velocity = Vector2.zero;
+            _rb.linearVelocity = Vector2.zero;
             _rb.angularVelocity = 0f;
         }
     }

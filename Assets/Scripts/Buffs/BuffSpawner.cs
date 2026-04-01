@@ -14,6 +14,8 @@ public class BuffSpawner : MonoBehaviour
     // ── Inspector ──────────────────────────────────────────────────────────────
     [SerializeField] private GameConfig config;
 
+    [SerializeField] private int initialBuffCount = 6;
+
     // Prefab references — assign in the Inspector or create at runtime
     [SerializeField] private SpeedBuff        speedBuffPrefab;
     [SerializeField] private MagnetBuff       magnetBuffPrefab;
@@ -51,6 +53,11 @@ public class BuffSpawner : MonoBehaviour
 
         // Create default prefabs if none assigned
         EnsurePrefabs();
+
+        // Spawn initial set of buffs immediately
+        int spawnCount = Mathf.Clamp(initialBuffCount, 0, config != null ? config.maxActiveBuffs : 5);
+        for (int i = 0; i < spawnCount; i++)
+            SpawnRandomBuff();
 
         StartCoroutine(SpawnRoutine());
     }

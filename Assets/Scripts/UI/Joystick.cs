@@ -36,8 +36,12 @@ public class Joystick : MonoBehaviour,
         _canvas = GetComponentInParent<Canvas>();
         if (background == null)
             background = GetComponent<RectTransform>();
+    }
 
-        // Hide until touched
+    private void Start()
+    {
+        // Hide until touched (deferred to Start so runtime bootstrappers can
+        // override the background field via reflection before it is hidden)
         SetVisible(false);
     }
 
