@@ -401,11 +401,13 @@ public static class GameBootstrapper
         SetField(gameOver, "mainMenuButton",   mainMenuBtn);
 
         // Wire button listeners
+        // "Play Again" reloads the current scene (works from any scene name)
         playAgainBtn.onClick.AddListener(() =>
         {
             Time.timeScale = 1f;
-            SceneManager.LoadScene("Game");
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         });
+        // "Main Menu" matches the scene name used across the rest of the project
         mainMenuBtn.onClick.AddListener(() =>
         {
             Time.timeScale = 1f;
