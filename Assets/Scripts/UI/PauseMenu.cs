@@ -28,11 +28,17 @@ public class PauseMenu : MonoBehaviour
     // ── Lifecycle ──────────────────────────────────────────────────────────────
     private void Awake()
     {
+        // Panel visibility is managed here so it hides even in hand-crafted scenes.
+        pausePanel?.SetActive(false);
+    }
+
+    private void Start()
+    {
+        // Wire listeners in Start so that fields injected via reflection (by
+        // AutoSceneSetup) are guaranteed to be set before binding.
         resumeButton?.onClick.AddListener(Resume);
         settingsButton?.onClick.AddListener(OpenSettings);
         mainMenuButton?.onClick.AddListener(GoToMainMenu);
-
-        pausePanel?.SetActive(false);
     }
 
     private void Update()
@@ -78,6 +84,9 @@ public class PauseMenu : MonoBehaviour
     private void GoToMainMenu()
     {
         Time.timeScale = 1f;
-        SceneManager.LoadScene("MainMenu");
+        if (GameBootstrapper.Instance != null)
+            GameBootstrapper.Instance.GoToMainMenu();
+        else
+            SceneManager.LoadScene("MainMenu");
     }
 }
