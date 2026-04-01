@@ -18,10 +18,14 @@ public class BlackHolePhysics : MonoBehaviour
     /// <summary>Current movement speed (affected by mass and buffs).</summary>
     public float CurrentSpeed { get; private set; }
 
+    /// <summary>When true movement input is ignored (stun state).</summary>
+    public bool IsStunned { get; set; }
+
     // ── Private ────────────────────────────────────────────────────────────────
     private Rigidbody2D _rb;
     private MassSystem _massSystem;
 
+    private float _externalSpeedModifier = 0f;
     private float _speedBoostMultiplier = 1f;
     private float _speedBoostTimer;
     private bool _magnetActive;
@@ -52,6 +56,12 @@ public class BlackHolePhysics : MonoBehaviour
 
     // ── Public API ─────────────────────────────────────────────────────────────
 
+    /// <summary>Adds a speed modifier (e.g. -0.3f for -30%). Can be called multiple times; they stack additively.</summary>
+    public void AddSpeedModifier(float delta)
+    {
+        _externalSpeedModifier += delta;
+    }
+
     /// <summary>Activates the speed boost buff.</summary>
     public void ActivateSpeedBoost()
     {
@@ -81,12 +91,19 @@ public class BlackHolePhysics : MonoBehaviour
 
     private void ApplyMovement()
     {
-        float baseSpeed = config != null ? config.baseSpeed : 6f;
-        float penalty = config != null ? config.speedMassPenalty : 0.03f;
-        float minSpeed = config != null ? config.minSpeed : 2f;
+        if (IsStunned)
+        {
+            _rb.linearVelocity = Vector2.zero;
+            return;
+        }
 
-        CurrentSpeed = Mathf.Max(minSpeed,
-            (baseSpeed - _massSystem.Mass * penalty) * _speedBoostMultiplier);
+        float baseSpeed = config != null ? config.baseSpeed : 6f;
+        float penalty   = config != null ? config.speedMassPenalty : 0.03f;
+        float minSpeed  = config != null ? config.minSpeed : 2f;
+
+        float rawSpeed = (baseSpeed - _massSystem.Mass * penalty) * _speedBoostMultiplier;
+        rawSpeed *= (1f + _externalSpeedModifier);               // apply stacked modifiers
+        CurrentSpeed = Mathf.Max(minSpeed, rawSpeed);
 
         _rb.linearVelocity = InputDirection.normalized * CurrentSpeed;
     }

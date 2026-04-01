@@ -101,4 +101,40 @@ public class GameConfig : ScriptableObject
 
     [Tooltip("Mass ratio at which a bot starts fleeing (ownMass / threatMass)")]
     public float fleeMassRatio = 1.2f;
+
+    [Header("Camera")]
+    [Tooltip("How fast the camera follows the player (higher = snappier)")]
+    public float cameraFollowSpeed = 5f;
+
+    [Tooltip("How fast the camera zooms in/out")]
+    public float cameraZoomSpeed = 3f;
+
+    [Tooltip("Minimum orthographic size (closest zoom)")]
+    public float cameraMinZoom = 8f;
+
+    [Tooltip("Maximum orthographic size (farthest zoom)")]
+    public float cameraMaxZoom = 28f;
+
+    [Tooltip("How much mass increases the zoom (orthographicSize += mass * factor)")]
+    public float cameraZoomMassFactor = 0.15f;
+
+    [Tooltip("How far ahead of movement direction the camera looks")]
+    public float cameraLookAhead = 2.5f;
+
+    [Header("Map Visuals")]
+    [Tooltip("Number of decorative zone rings on the map")]
+    public int mapZoneRingCount = 3;
+
+    [Tooltip("Colour of the inner safe zone")]
+    public Color safeZoneColor = new Color(0.1f, 0.55f, 0.1f, 0.25f);
+
+    [Tooltip("Colour of the danger zone near the border")]
+    public Color dangerZoneColor = new Color(0.7f, 0.1f, 0.1f, 0.25f);
+
+    [Tooltip("Enable animated star particles on the background")]
+    public bool enableStarParticles = true;
+
+    [Tooltip("Number of background star particles")]
+    [Range(50, 500)]
+    public int starParticleCount = 200;
 }
