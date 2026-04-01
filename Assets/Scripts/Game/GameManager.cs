@@ -47,7 +47,8 @@ public class GameManager : MonoBehaviour
     // ── Private ────────────────────────────────────────────────────────────────
     private BlackHoleController              _playerController;
     private readonly List<BlackHoleController> _allControllers = new List<BlackHoleController>();
-    private bool _gameEnded;
+    private bool  _gameEnded;
+    private float _matchStartTime;
 
     // Player colour palette
     private static readonly Color[] PlayerColors = new Color[]
@@ -125,6 +126,8 @@ public class GameManager : MonoBehaviour
         SpawnPlayer();
         SpawnBots();
 
+        _matchStartTime = Time.time;
+
         // Null-safe timer start
         if (matchTimer != null)
         {
@@ -159,6 +162,7 @@ public class GameManager : MonoBehaviour
         Vector3 pos = MathHelpers.RandomPointInCircle(mapRadius * 0.5f);
 
         BlackHoleController player = Instantiate(playerPrefab, pos, Quaternion.identity);
+        player.gameObject.SetActive(true);
         player.SetJoystick(joystick);
         player.gameObject.name = "Player";
 
@@ -180,16 +184,19 @@ public class GameManager : MonoBehaviour
 
         for (int i = 0; i < botCount; i++)
         {
-            if (botPrefab == null)
+            // Use the assigned prefab, or create a unique runtime placeholder for each bot
+            BotAI prefabToUse = botPrefab;
+            if (prefabToUse == null)
             {
                 Debug.LogWarning("[GameManager] Bot prefab not assigned — creating runtime placeholder.");
-                botPrefab = CreateBlackHolePrefab<BotAI>(PlayerColors[1 + i % (PlayerColors.Length - 1)]);
+                prefabToUse = CreateBlackHolePrefab<BotAI>(PlayerColors[1 + i % (PlayerColors.Length - 1)]);
             }
 
             float mapRadius = config != null ? config.mapRadius : 50f;
             Vector3 pos = MathHelpers.RandomPointInCircle(mapRadius * 0.6f);
 
-            BotAI bot = Instantiate(botPrefab, pos, Quaternion.identity);
+            BotAI bot = Instantiate(prefabToUse, pos, Quaternion.identity);
+            bot.gameObject.SetActive(true);
             bot.gameObject.name = $"Bot_{i + 1}";
 
             // Assign difficulty profile
@@ -229,6 +236,9 @@ public class GameManager : MonoBehaviour
     private void CheckWinConditions()
     {
         if (_gameEnded) return;
+
+        // Grace period: don't end the game in the first 5 seconds
+        if (Time.time - _matchStartTime < 5f) return;
 
         // Count alive players
         int aliveCount = 0;
@@ -303,6 +313,7 @@ public class GameManager : MonoBehaviour
     {
         GameObject go = new GameObject("BlackHolePrefab_" + typeof(T).Name);
         go.SetActive(false);
+        go.transform.localScale = Vector3.one * 0.5f;
 
         // Visual
         SpriteRenderer sr = go.AddComponent<SpriteRenderer>();

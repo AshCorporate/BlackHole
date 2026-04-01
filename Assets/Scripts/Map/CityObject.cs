@@ -30,8 +30,8 @@ public class CityObject : MonoBehaviour
         _rb.gravityScale = 0f;
         _rb.linearDamping = 5f;
 
-        // Scale the object proportional to its mass
-        float scale = Mathf.Clamp(0.2f + objectMass * 0.05f, 0.2f, 3f);
+        // Scale the object proportional to its mass (trash≈0.2, cars≈0.5, buildings 1-2, skyscrapers 2-3)
+        float scale = Mathf.Clamp(objectMass * 0.025f, 0.2f, 3f);
         transform.localScale = Vector3.one * scale;
 
         ApplyColor();
@@ -64,7 +64,7 @@ public class CityObject : MonoBehaviour
         objectMass = mass;
         objectColor = color;
 
-        float scale = Mathf.Clamp(0.2f + mass * 0.05f, 0.2f, 3f);
+        float scale = Mathf.Clamp(mass * 0.025f, 0.2f, 3f);
         transform.localScale = Vector3.one * scale;
 
         ApplyColor();

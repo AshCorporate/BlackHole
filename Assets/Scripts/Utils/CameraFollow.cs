@@ -11,10 +11,10 @@ public class CameraFollow : MonoBehaviour
     [SerializeField] private float     cameraZ               = -10f;
 
     [Header("Dynamic Zoom")]
-    [SerializeField] private float baseOrthographicSize = 5f;
+    [SerializeField] private float baseOrthographicSize = 25f;
     [SerializeField] private float zoomScaleFactor      = 3f;
     [SerializeField] private float zoomSmoothSpeed      = 3f;
-    [SerializeField] private float maxOrthographicSize  = 30f;
+    [SerializeField] private float maxOrthographicSize  = 50f;
 
     private MassSystem _massSystem;
     private Camera     _camera;
