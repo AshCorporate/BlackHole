@@ -1,0 +1,157 @@
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+
+/// <summary>
+/// Main controller for the player-controlled black hole.
+/// Bridges input (joystick), physics, mass, and territory systems.
+/// </summary>
+[RequireComponent(typeof(BlackHolePhysics))]
+[RequireComponent(typeof(MassSystem))]
+[RequireComponent(typeof(TerritoryTrail))]
+public class BlackHoleController : MonoBehaviour
+{
+    // ── Inspector ──────────────────────────────────────────────────────────────
+    [SerializeField] private GameConfig config;
+    [SerializeField] private Joystick joystick;   // assigned via GameManager at runtime
+
+    // ── Cached Components ──────────────────────────────────────────────────────
+    private BlackHolePhysics _physics;
+    private MassSystem _massSystem;
+    private TerritoryTrail _trail;
+
+    // ── State ──────────────────────────────────────────────────────────────────
+    public bool IsAlive { get; private set; } = true;
+    public bool IsShielded { get; private set; }
+    private float _shieldTimer;
+
+    // ── Lifecycle ──────────────────────────────────────────────────────────────
+    private void Awake()
+    {
+        _physics = GetComponent<BlackHolePhysics>();
+        _massSystem = GetComponent<MassSystem>();
+        _trail = GetComponent<TerritoryTrail>();
+
+        if (config == null)
+            config = Resources.Load<GameConfig>("GameConfig");
+    }
+
+    private void Update()
+    {
+        if (!IsAlive) return;
+
+        // Feed joystick input into physics
+        if (joystick != null)
+            _physics.InputDirection = joystick.Direction;
+
+        // Update shield timer
+        if (IsShielded)
+        {
+            _shieldTimer -= Time.deltaTime;
+            if (_shieldTimer <= 0f)
+                IsShielded = false;
+        }
+    }
+
+    // ── Public API ─────────────────────────────────────────────────────────────
+
+    /// <summary>Assigns the joystick reference at runtime (called by GameManager).</summary>
+    public void SetJoystick(Joystick j) => joystick = j;
+
+    /// <summary>Called when this black hole absorbs a city object.</summary>
+    public void AbsorbObject(CityObject obj)
+    {
+        if (!IsAlive || obj == null) return;
+        if (!_massSystem.CanAbsorb(obj.ObjectMass)) return;
+
+        _massSystem.AddMass(obj.ObjectMass);
+        obj.OnAbsorbed();
+    }
+
+    /// <summary>Called when this black hole absorbs another black hole.</summary>
+    public void AbsorbBlackHole(BlackHoleController other)
+    {
+        if (!IsAlive || other == null || !other.IsAlive) return;
+        if (!_massSystem.CanAbsorb(other._massSystem.Mass)) return;
+
+        _massSystem.AddMass(other._massSystem.Mass * 0.5f); // gain half the opponent's mass
+        other.Die();
+    }
+
+    /// <summary>Kills the black hole (trail cut or absorbed).</summary>
+    public void Die()
+    {
+        if (!IsAlive) return;
+        IsAlive = false;
+        _trail.ClearTrail();
+
+        // Hide the object
+        gameObject.SetActive(false);
+
+        // Schedule respawn
+        float delay = config != null ? config.respawnDelay : 3f;
+        StartCoroutine(RespawnCoroutine(delay));
+    }
+
+    /// <summary>Activates the shield buff.</summary>
+    public void ActivateShield()
+    {
+        IsShielded = true;
+        _shieldTimer = config != null ? config.shieldDuration : 5f;
+    }
+
+    // ── Private ────────────────────────────────────────────────────────────────
+
+    private IEnumerator RespawnCoroutine(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        Respawn();
+    }
+
+    private void Respawn()
+    {
+        float fraction = config != null ? config.respawnMassFraction : 0.3f;
+        _massSystem.SetMass(_massSystem.Mass * fraction);
+
+        // Place at a random position inside the map
+        float mapRadius = config != null ? config.mapRadius : 50f;
+        transform.position = MathHelpers.RandomPointInCircle(mapRadius * 0.7f);
+
+        IsAlive = true;
+        gameObject.SetActive(true);
+        _trail.ResetTrail();
+    }
+
+    // ── Trigger Detection ──────────────────────────────────────────────────────
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (!IsAlive) return;
+
+        // Check for city objects
+        CityObject cityObj = other.GetComponent<CityObject>();
+        if (cityObj != null)
+        {
+            AbsorbObject(cityObj);
+            return;
+        }
+
+        // Check for enemy black holes
+        BlackHoleController enemy = other.GetComponent<BlackHoleController>();
+        if (enemy != null && enemy != this)
+        {
+            // Larger one absorbs the smaller
+            if (_massSystem.Mass > enemy._massSystem.Mass * 1.1f)
+                AbsorbBlackHole(enemy);
+            return;
+        }
+
+        // Check for buffs
+        BuffBase buff = other.GetComponent<BuffBase>();
+        if (buff != null)
+        {
+            buff.Apply(this);
+            return;
+        }
+    }
+}
