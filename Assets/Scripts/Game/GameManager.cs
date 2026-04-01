@@ -128,6 +128,8 @@ public class GameManager : MonoBehaviour
         // Null-safe timer start
         if (matchTimer != null)
         {
+            if (matchTimer.OnTimeUp == null)
+                matchTimer.OnTimeUp = new UnityEngine.Events.UnityEvent();
             matchTimer.OnTimeUp.AddListener(OnTimeUp);
             matchTimer.StartTimer();
         }
@@ -136,6 +138,8 @@ public class GameManager : MonoBehaviour
             Debug.LogWarning("[GameManager] MatchTimer not found — creating one.");
             GameObject timerObj = new GameObject("MatchTimer");
             matchTimer = timerObj.AddComponent<MatchTimer>();
+            if (matchTimer.OnTimeUp == null)
+                matchTimer.OnTimeUp = new UnityEngine.Events.UnityEvent();
             matchTimer.OnTimeUp.AddListener(OnTimeUp);
             matchTimer.StartTimer();
         }

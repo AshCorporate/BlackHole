@@ -10,7 +10,7 @@ public class MatchTimer : MonoBehaviour
     [SerializeField] private GameConfig config;
 
     // ── Events ─────────────────────────────────────────────────────────────────
-    public UnityEvent OnTimeUp;
+    public UnityEvent OnTimeUp = new UnityEvent();
 
     // ── Public State ───────────────────────────────────────────────────────────
     public float TimeRemaining { get; private set; }
@@ -19,6 +19,8 @@ public class MatchTimer : MonoBehaviour
     // ── Lifecycle ──────────────────────────────────────────────────────────────
     private void Awake()
     {
+        if (OnTimeUp == null) OnTimeUp = new UnityEvent();
+
         if (config == null)
             config = Resources.Load<GameConfig>("GameConfig");
 
