@@ -25,6 +25,9 @@ public class BlackHoleController : MonoBehaviour
     public bool IsShielded { get; private set; }
     private float _shieldTimer;
 
+    /// <summary>True while the player is outside their own territory (tail active).</summary>
+    public bool IsCapturing => _trail != null && _trail.IsTailActive;
+
     // ── Lifecycle ──────────────────────────────────────────────────────────────
     private void Awake()
     {
@@ -106,6 +109,18 @@ public class BlackHoleController : MonoBehaviour
         _shieldTimer = config != null ? config.shieldDuration : 5f;
     }
 
+    /// <summary>
+    /// Applies a movement-blocking stun for the given duration (seconds).
+    /// Delegates to StunSystem; duration overrides the StunSystem's default.
+    /// </summary>
+    public void ApplyStun(float duration)
+    {
+        StunSystem stunSystem = GetComponent<StunSystem>();
+        if (stunSystem == null) return;
+        stunSystem.StunDuration = duration;
+        stunSystem.Stun();
+    }
+
     // ── Private ────────────────────────────────────────────────────────────────
 
     private IEnumerator RespawnCoroutine(float delay)
@@ -119,9 +134,9 @@ public class BlackHoleController : MonoBehaviour
         float fraction = config != null ? config.respawnMassFraction : 0.3f;
         _massSystem.SetMass(_massSystem.Mass * fraction);
 
-        // Place at a random position inside the map
-        float mapRadius = config != null ? config.mapRadius : 50f;
-        transform.position = MathHelpers.RandomPointInCircle(mapRadius * 0.7f);
+        // Place at a random position inside the map (70% of half the map side)
+        float mapHalf = (config != null ? config.mapSize : 100f) * 0.5f;
+        transform.position = MathHelpers.RandomPointInCircle(mapHalf * 0.7f);
 
         IsAlive = true;
 

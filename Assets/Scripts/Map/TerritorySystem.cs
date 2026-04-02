@@ -27,6 +27,11 @@ public class TerritorySystem : MonoBehaviour
         Instance = this;
     }
 
+    private void FixedUpdate()
+    {
+        CheckAllTrailCollisions();
+    }
+
     // ── Public API ─────────────────────────────────────────────────────────────
 
     /// <summary>Registers a player with a small starting territory (circle).</summary>
@@ -98,6 +103,40 @@ public class TerritorySystem : MonoBehaviour
     {
         if (!_territories.TryGetValue(trail, out var poly)) return 0f;
         return Mathf.Abs(MathHelpers.PolygonSignedArea(poly));
+    }
+
+    /// <summary>
+    /// Called every FixedUpdate. Iterates all capturing players and checks whether their
+    /// current position lies on any enemy's active trail. Kills the player if it does.
+    /// This is the FixedUpdate-based authoritative collision check; the EdgeCollider2D
+    /// trigger system in TerritoryTrail.OnTriggerEnter2D is the complementary real-time path.
+    /// </summary>
+    public void CheckAllTrailCollisions()
+    {
+        foreach (var kvp in _territories)
+        {
+            TerritoryTrail trail = kvp.Key;
+            if (trail == null) continue;
+
+            BlackHoleController ctrl = trail.GetComponent<BlackHoleController>();
+            if (ctrl == null || !ctrl.IsAlive || !ctrl.IsCapturing) continue;
+
+            Vector2 pos = trail.transform.position;
+
+            // Check if this player's head is on any other player's trail
+            foreach (var kvp2 in _territories)
+            {
+                TerritoryTrail otherTrail = kvp2.Key;
+                if (otherTrail == null || otherTrail == trail) continue;
+                if (!otherTrail.IsTailActive) continue;
+
+                if (otherTrail.IsOnTrail(pos))
+                {
+                    ctrl.Die();
+                    break;   // no need to check further for this player
+                }
+            }
+        }
     }
 
     // ── Private ────────────────────────────────────────────────────────────────

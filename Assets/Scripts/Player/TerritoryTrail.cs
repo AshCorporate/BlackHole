@@ -273,12 +273,12 @@ public class TerritoryTrail : MonoBehaviour
     {
         if (!_tailActive) return;
 
-        // An enemy black hole entered our tail collider
+        // An enemy black hole stepped on our tail → the enemy dies (Paper.io rule: hitting
+        // another player's tail kills the attacker, not the tail owner).
         BlackHoleController enemy = other.GetComponent<BlackHoleController>();
         if (enemy != null && enemy != _controller && enemy.IsAlive)
         {
-            // Enemy hit our tail → we die (GDD §6)
-            _controller.Die();
+            enemy.Die();
         }
     }
 
