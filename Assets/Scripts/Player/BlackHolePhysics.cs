@@ -110,13 +110,18 @@ public class BlackHolePhysics : MonoBehaviour
 
     private void KeepInsideMap()
     {
-        float mapRadius = config != null ? config.mapRadius : 50f;
-        Vector2 pos = _rb.position;
-        if (pos.magnitude > mapRadius - _massSystem.Radius)
-        {
-            pos = pos.normalized * (mapRadius - _massSystem.Radius);
-            _rb.MovePosition(pos);
-        }
+        float mapSize = config != null ? config.mapSize : 100f;
+        float half    = mapSize * 0.5f;
+        float r       = _massSystem.Radius;
+        Vector2 pos   = _rb.position;
+        bool changed  = false;
+
+        if (pos.x < -half + r) { pos.x = -half + r; changed = true; }
+        if (pos.x >  half - r) { pos.x =  half - r; changed = true; }
+        if (pos.y < -half + r) { pos.y = -half + r; changed = true; }
+        if (pos.y >  half - r) { pos.y =  half - r; changed = true; }
+
+        if (changed) _rb.MovePosition(pos);
     }
 
     private void UpdateBuffTimers()

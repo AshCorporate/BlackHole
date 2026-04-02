@@ -7,7 +7,8 @@ using UnityEngine;
 ///       targetSize = cameraBaseSize + (mass * cameraMassZoomFactor)
 ///       clamped between cameraMinZoom and cameraMaxZoom.
 ///   • Slight look-ahead in movement direction (like Paper.io).
-///   • Camera clamped to map circle boundary.
+///   • Camera clamped to square map boundary (mapSize × mapSize).
+///   • Auto-finds the player by tag "Player" if no target was set.
 /// </summary>
 public class CameraController : MonoBehaviour
 {
@@ -31,6 +32,22 @@ public class CameraController : MonoBehaviour
         // Initial zoom
         if (_cam != null && _cam.orthographic)
             _cam.orthographicSize = config != null ? config.cameraBaseSize : 15f;
+    }
+
+    private void Start()
+    {
+        // Auto-find the player by tag if no target was set from GameManager
+        if (playerTransform == null)
+        {
+            GameObject playerGo = GameObject.FindWithTag("Player");
+            if (playerGo != null)
+            {
+                playerTransform   = playerGo.transform;
+                playerMass        = playerGo.GetComponent<MassSystem>();
+                _playerController = playerGo.GetComponent<BlackHoleController>();
+                _previousPlayerPos = playerGo.transform.position;
+            }
+        }
     }
 
     /// <summary>Sets the player target. Call from GameManager after player spawn.</summary>
@@ -62,7 +79,8 @@ public class CameraController : MonoBehaviour
 
         float followSpeed = config != null ? config.cameraFollowSpeed : 8f;
         float lookAhead   = config != null ? config.cameraLookAhead   : 1.5f;
-        float mapRadius   = config != null ? config.mapRadius         : 50f;
+        float mapSize     = config != null ? config.mapSize           : 100f;
+        float mapHalf     = mapSize * 0.5f;
 
         // --- Mass-based zoom ---
         float baseSize    = config != null ? config.cameraBaseSize         : 15f;
@@ -88,16 +106,15 @@ public class CameraController : MonoBehaviour
             playerPos.y + lookOffset.y,
             -10f);
 
-        // --- Clamp to map boundary ---
-        float zoom        = _cam != null ? _cam.orthographicSize : targetZoom;
-        float aspect      = _cam != null ? _cam.aspect : 1.78f;
-        float halfH       = zoom;
-        float halfW       = zoom * aspect;
-        float clampRadius = Mathf.Max(0f, mapRadius - Mathf.Max(halfH, halfW));
-        Vector2 desiredXY = new Vector2(desiredPos.x, desiredPos.y);
-        if (desiredXY.magnitude > clampRadius && clampRadius > 0f)
-            desiredXY = desiredXY.normalized * clampRadius;
-        desiredPos = new Vector3(desiredXY.x, desiredXY.y, -10f);
+        // --- Clamp to square map boundary ---
+        float zoom   = _cam != null ? _cam.orthographicSize : targetZoom;
+        float aspect = _cam != null ? _cam.aspect : 1.78f;
+        float halfH  = zoom;
+        float halfW  = zoom * aspect;
+
+        desiredPos.x = Mathf.Clamp(desiredPos.x, -mapHalf + halfW, mapHalf - halfW);
+        desiredPos.y = Mathf.Clamp(desiredPos.y, -mapHalf + halfH, mapHalf - halfH);
+        desiredPos.z = -10f;
 
         // --- Smooth follow (SmoothDamp for Paper.io feel) ---
         transform.position = Vector3.SmoothDamp(

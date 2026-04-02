@@ -16,7 +16,10 @@ public class GameConfig : ScriptableObject
     public int botCount = 6;
 
     [Header("Map Settings")]
-    [Tooltip("Radius of the circular city map in world units")]
+    [Tooltip("Side length of the square map in world units (Paper.io style, e.g. 100)")]
+    public float mapSize = 100f;
+
+    [Tooltip("Half the map side length — kept for backward compatibility with AI, spawner, and minimap scripts (mapRadius = mapSize / 2)")]
     public float mapRadius = 50f;
 
     [Tooltip("Minimum distance between spawned objects")]
@@ -64,6 +67,9 @@ public class GameConfig : ScriptableObject
     [Tooltip("Mass fraction retained after death (0-1)")]
     [Range(0f, 1f)]
     public float respawnMassFraction = 0.3f;
+
+    [Tooltip("Duration of the stun applied when the tail timer expires (GDD §7: 1 s)")]
+    public float stunDuration = 1f;
 
     [Header("Power-ups / Buffs")]
     [Tooltip("How many buffs exist on the map at the same time")]

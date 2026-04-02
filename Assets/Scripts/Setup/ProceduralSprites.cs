@@ -138,6 +138,55 @@ public static class ProceduralSprites
     }
 
     /// <summary>
+    /// Creates a thin ring (hollow circle outline) sprite.
+    /// Useful for player outline circles and indicators.
+    /// </summary>
+    /// <param name="size">Texture width and height in pixels (e.g. 128).</param>
+    /// <param name="color">Ring color.</param>
+    /// <param name="ringWidthFraction">Ring stroke width as a fraction of the radius (default 0.1 = 10%).</param>
+    /// <returns>A Unity Sprite backed by a generated Texture2D.</returns>
+    public static Sprite CreateRingSprite(int size, Color color, float ringWidthFraction = 0.1f)
+    {
+        Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        Color[] pixels = new Color[size * size];
+
+        float outerRadius = size * 0.5f;
+        float innerRadius = outerRadius * (1f - ringWidthFraction);
+        float cx = outerRadius;
+        float cy = outerRadius;
+
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                float dx = x - cx + 0.5f;
+                float dy = y - cy + 0.5f;
+                float dist = Mathf.Sqrt(dx * dx + dy * dy);
+
+                // Soft anti-aliased ring between inner and outer radius
+                float outerAlpha = Mathf.Clamp01(outerRadius - dist);
+                float innerAlpha = Mathf.Clamp01(dist - innerRadius);
+                float alpha      = outerAlpha * innerAlpha;
+
+                Color c = color;
+                c.a = alpha;
+                pixels[y * size + x] = c;
+            }
+        }
+
+        tex.SetPixels(pixels);
+        tex.Apply();
+        tex.wrapMode = TextureWrapMode.Clamp;
+        tex.filterMode = FilterMode.Bilinear;
+
+        return Sprite.Create(
+            tex,
+            new Rect(0, 0, size, size),
+            new Vector2(0.5f, 0.5f),
+            PixelsPerUnit);
+    }
+
+    /// <summary>
     /// Creates a solid white 1×1 pixel sprite, useful as a base for tinted UI Images.
     /// </summary>
     public static Sprite CreateWhiteSquare()

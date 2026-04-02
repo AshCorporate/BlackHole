@@ -163,21 +163,28 @@ public class GameManager : MonoBehaviour
             playerPrefab = CreateBlackHolePrefab<BlackHoleController>(PlayerColors[0]);
         }
 
-        float mapRadius = config != null ? config.mapRadius : 50f;
-        Vector3 pos = MathHelpers.RandomPointInCircle(mapRadius * 0.5f);
+        // Spawn the human player at the map centre for guaranteed first-frame visibility
+        Vector3 pos = Vector3.zero;
 
         BlackHoleController player = Instantiate(playerPrefab, pos, Quaternion.identity);
         player.gameObject.SetActive(true);
-        player.SetJoystick(joystick);
+        player.gameObject.tag  = "Player";
         player.gameObject.name = "Player";
+        player.SetJoystick(joystick);
+
+        // Ensure PlayerVisual is attached so the player circle is always visible
+        PlayerVisual visual = player.gameObject.GetComponent<PlayerVisual>();
+        if (visual == null)
+            visual = player.gameObject.AddComponent<PlayerVisual>();
+        visual.SetColor(PlayerColors[0]);
 
         // Wire camera
         CameraController cam = Camera.main?.GetComponent<CameraController>();
         if (cam == null && Camera.main != null)
             cam = Camera.main.gameObject.AddComponent<CameraController>();
-        cam?.SetTarget(player.transform, player.GetComponent<MassSystem>());
+        cam?.SetTarget(player);
 
-        // Set colour
+        // Set trail colour
         TerritoryTrail trail = player.GetComponent<TerritoryTrail>();
         trail?.SetColor(PlayerColors[0]);
 
@@ -208,8 +215,8 @@ public class GameManager : MonoBehaviour
                 prefabToUse = CreateBlackHolePrefab<BotAI>(PlayerColors[1 + i % (PlayerColors.Length - 1)]);
             }
 
-            float mapRadius = config != null ? config.mapRadius : 50f;
-            Vector3 pos = MathHelpers.RandomPointInCircle(mapRadius * 0.6f);
+            float mapHalf = (config != null ? config.mapSize : 100f) * 0.3f;
+            Vector3 pos = MathHelpers.RandomPointInCircle(mapHalf);
 
             BotAI bot = Instantiate(prefabToUse, pos, Quaternion.identity);
             bot.gameObject.SetActive(true);
@@ -220,6 +227,13 @@ public class GameManager : MonoBehaviour
                 bot.difficulty = botDifficulties[i % botDifficulties.Length];
 
             Color botColor = PlayerColors[(i + 1) % PlayerColors.Length];
+
+            // Ensure bots are also visually represented
+            PlayerVisual botVisual = bot.gameObject.GetComponent<PlayerVisual>();
+            if (botVisual == null)
+                botVisual = bot.gameObject.AddComponent<PlayerVisual>();
+            botVisual.SetColor(botColor);
+
             TerritoryTrail trail = bot.GetComponent<TerritoryTrail>();
             trail?.SetColor(botColor);
             minimapController?.RegisterTrail(trail);
@@ -281,13 +295,12 @@ public class GameManager : MonoBehaviour
         }
 
         // Check territory domination (>80% of total map area)
-        // (simplified: compare player area to sum of all)
         if (territorySystem != null && _playerController != null)
         {
             TerritoryTrail playerTrail = _playerController.GetComponent<TerritoryTrail>();
             float playerArea = territorySystem.GetCapturedArea(playerTrail);
-            float mapArea = Mathf.PI * (config != null ? config.mapRadius : 50f) *
-                            (config != null ? config.mapRadius : 50f);
+            float mapSide    = config != null ? config.mapSize : 100f;
+            float mapArea    = mapSide * mapSide;
             if (playerArea / mapArea > 0.8f)
             {
                 EndGame(true);
